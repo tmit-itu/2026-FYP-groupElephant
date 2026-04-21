@@ -2,7 +2,7 @@ import cv2
 import numpy as np 
 
 def mean_gradient(image,mask):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize = 3)
     sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize = 3)
@@ -14,4 +14,4 @@ def mean_gradient(image,mask):
     if len(texture_values) == 0:
         return 0.0
     
-    return np.mean(texture_values)
+    return float(np.mean(texture_values))

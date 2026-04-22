@@ -2,7 +2,7 @@ import pandas as pd
 import cv2
 import os
 from hair_removal import remove_hair
-from feature_asymmetry import get_assymetry
+from feature_asymmetry import mean_score
 from feature_border import get_border
 from feature_texture import mean_gradient
 from feature_diameter import get_diameter
@@ -22,7 +22,7 @@ def extract_extended():
         if img is not None and mask is not None:
             img_clean, _ = remove_hair(img)
 
-            feature_a = get_assymetry(mask)
+            feature_a = mean_score(mask)
             feature_b = get_border(mask)
             feature_t = mean_gradient(img_clean, mask)
             feature_d = get_diameter(mask)

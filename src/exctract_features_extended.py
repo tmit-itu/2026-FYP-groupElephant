@@ -2,39 +2,55 @@ import pandas as pd
 import cv2
 import os
 from hair_removal import remove_hair
-from feature_asymmetry import mean_score
-from feature_border import get_border
-from feature_texture import mean_gradient
+from feature_asymmetry import mean_asymmetry
+from feature_compactness import get_compactness
+from feature_color import extract_color_features
 from feature_diameter import get_diameter
+from feature_texture import mean_gradient
+from preprocessing import enhance_color_hsv_clahe
 
 def extract_extended():
     metadata = pd.read_csv("../metadata.csv")
     diagnosis_mapping = {'MEL': 1, 'BCC': 1, 'SCC': 1, 'NEV': 0, 'ACK': 0, 'SEK': 0}
     metadata["cancer"] = metadata["diagnostic"].map(diagnosis_mapping)
+    imgs_in_folder = os.listdir("../data/imgs/")
+
+    metadata_filtered = metadata[metadata["img_id"].isin(imgs_in_folder)]
 
     results = []
+    total = len(metadata_filtered)
+    print(f"Starting feature extraction for {total} images")
+    for index, row in metadata_filtered.iterrows():
+        img_id = row["img_id"].str[:-4] 
 
-    for index, row in metadata.iterrows():
-        img_id = os.path.splitext(row["img_id"])[0]
         img = cv2.imread(f"../data/imgs/{img_id}.png")
-        mask = cv2.imread(f"../data/masks/{img_id}_mask.png", 0)
+        mask = cv2.imread(f"../data/masks/{img_id}_mask.png")
 
         if img is not None and mask is not None:
             img_clean, _ = remove_hair(img)
 
-            feature_a = mean_score(mask)
-            feature_b = get_border(mask)
-            feature_t = mean_gradient(img_clean, mask)
+            img_preprocessed = enhance_color_hsv_clahe(img_clean)
+            feature_a = mean_asymmetry(mask)
+            feature_b = get_compactness(mask)
+            feature_c = extract_color_features(img_preprocessed, mask)
             feature_d = get_diameter(mask)
+            feature_t = mean_gradient(img_preprocessed, mask)
             
-            results.append({
-                "img_id": img_id,
+            results.append({"img_id": row["img_id"],
+                "patient_id": row["patient_id"],
+                "hair_coverage":    ,
+                "cancer": row["cancer"],
                 "asymmetry": feature_a,
                 "border": feature_b,
                 "texture": feature_t,
-                "diameter": feature_d,
-                "cancer": row["cancer"]
-            })
+                "h_mean": feature_c[0],
+                "s_mean": feature_c[1],
+                "v_mean": feature_c[2],
+                "h_std": feature_c[3],
+                "s_std": feature_c[4],
+                "v_std": feature_c[5],
+                "color_entropy": feature_c[6]
+                })
     
     df_features = pd.DataFrame(results)
     df_features.to_csv("../results/features_extended.csv", index=False)

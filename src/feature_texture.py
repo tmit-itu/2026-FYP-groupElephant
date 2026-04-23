@@ -9,6 +9,9 @@ def mean_gradient(image,mask):
 
     magnitude = np.sqrt(sobelx**2 + sobely**2)
 
+    if len(mask.shape) == 3:
+        mask = mask[:, :, 0]
+
     texture_values = magnitude[mask > 0]
 
     if len(texture_values) == 0:

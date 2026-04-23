@@ -1,8 +1,44 @@
 
-import cv2 as cv
+import cv2 
 import numpy as np
+from scipy.stats import entropy
 
-def extract_color_features(image, slic_segments, mask):
+def mean_hsv_in_mask(img, mask):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    if len(mask.shape) == 3:
+        mask = mask[:, :, 0]
+    pixels = hsv[mask > 0].astype(np.float32) / 255.0
+
+    if len(pixels) > 0:
+        res = np.mean(pixels, axis=0)
+        return res if res.shape == (3,) else [res, res, res]
+    
+    return [0.0, 0.0, 0.0]
+
+def std_hsv_in_mask(img, mask):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    if len(mask.shape) == 3:
+        mask = mask[:, :, 0]
+    
+    pixels = hsv[mask > 0].astype(np.float32) / 255.0
+
+    if len(pixels) > 0:
+        res = np.std(pixels, axis=0)
+        return res if res.shape == (3,) else [res, res, res] 
+    
+    return [0.0, 0.0, 0.0]
+
+def color_entropy_from_pixels(img, mask):
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    if len(mask.shape) == 3:
+        mask  = mask[:, :, 0]
+    h_channel = hsv[:, :, 0][mask > 0].astype(np.float32) / 255.0
+    if len(h_channel) == 0: return 0.0
+    hist, _ = np.histogram(h_channel, bins = 20, range=(0,1))
+    hist_dist = hist / (np.sum(hist) + 1e-6)
+    return float(entropy(hist_dist + 1e-6))
+
+def extract_color_features(image, mask):
     
     """Extract color features from an object in the image.
     The features describe color variability, dominant colors 
@@ -11,24 +47,11 @@ def extract_color_features(image, slic_segments, mask):
     features = []
     
     mean_hsv = mean_hsv_in_mask(image, mask)
-    features.extend(mean_hsv)
+    features.extend(list(mean_hsv))   
 
-    rgb_variance = rgb_var(image, slic_segments)
-    features.extend(rgb_variance)
+    std_hsv = std_hsv_in_mask(image, mask)
+    features.extend(list(std_hsv))   
 
-    hsv_variance = hsv_var(image, slic_segments)
-    features.extend(hsv_variance)
-
-    dom_colors = color_dominance(
-        image,
-        mask,
-        clusters=3,
-        include_ratios=False
-    )
-
-    features.extend(dom_colors.flatten()) 
-    
-    color_asym = color_asymmetry_hsv(image, mask)
-    features.extend(color_asym)
-    
+    features.append(color_entropy_from_pixels(image, mask))
+        
     return np.array(features, dtype=np.float32)

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import cv2
 import os
 from hair_removal import remove_hair
@@ -21,14 +22,15 @@ def extract_extended():
     total = len(metadata_filtered)
     print(f"Starting feature extraction for {total} images")
     for index, row in metadata_filtered.iterrows():
-        img_id = row["img_id"].str[:-4] 
+        img_id = row["img_id"][:-4] 
 
         img = cv2.imread(f"../data/imgs/{img_id}.png")
         mask = cv2.imread(f"../data/masks/{img_id}_mask.png")
 
         if img is not None and mask is not None:
-            img_clean, _ = remove_hair(img)
+            img_clean, hair_mask = remove_hair(img)
 
+            h_coverage = np.sum(hair_mask > 0) / hair_mask.size if hair_mask is not None else 0
             img_preprocessed = enhance_color_hsv_clahe(img_clean)
             feature_a = mean_asymmetry(mask)
             feature_b = get_compactness(mask)
@@ -38,7 +40,7 @@ def extract_extended():
             
             results.append({"img_id": row["img_id"],
                 "patient_id": row["patient_id"],
-                "hair_coverage":    ,
+                "hair_coverage": h_coverage,
                 "cancer": row["cancer"],
                 "asymmetry": feature_a,
                 "border": feature_b,

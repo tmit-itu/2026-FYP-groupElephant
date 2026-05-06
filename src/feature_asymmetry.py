@@ -111,9 +111,9 @@ def rotation_asymmetry(mask, n: int):
 
     return asymmetry_scores
 
-def mean_asymmetry(mask, rotations = 30):
+def mean_asymmetry(mask, rotations = 4):
     '''Return mean asymmetry score from mask.
-    Optional argument (defualt 30) rotations decides amount of rotations in asymmetry calculation
+    Chose 4 instead of the defaulted 30 so that the machine runs faster. 
 
     Args:
         mask (numpy.ndarray): mask to compute asymmetry score for

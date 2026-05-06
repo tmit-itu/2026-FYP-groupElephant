@@ -78,6 +78,9 @@ def extract_extended():
     with ProcessPoolExecutor() as executor:
         futures = [executor.submit(process_image, row) for row in rows]
 
+        img = cv2.imread(f"../data/imgs/{img_id}.png")
+        mask = cv2.imread(f"../data/masks/{img_id}_mask.png", cv2.IMREAD_GRAYSCALE)
+
         for future in tqdm(as_completed(futures), total=total):
             res = future.result()
             processed += 1

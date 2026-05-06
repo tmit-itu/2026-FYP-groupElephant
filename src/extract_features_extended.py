@@ -19,8 +19,8 @@ output_path = "../results/features_extended.csv"
 def process_image(row):
     try:
         img_id = row["img_id"][:-4]
-        img = cv2.imread(f"{imgs_path}/{img_id}.png")
-        mask = cv2.imread(f"{masks_path}/{img_id}_mask.png", 0)
+        img = cv2.imread(os.path.join(imgs_path, f"{img_id}.png"))
+        mask = cv2.imread(os.path.join(masks_path, f"{img_id}_mask.png"), 0)
 
         if img is None or mask is None:
             raise ValueError("Image or mask not found")
@@ -78,15 +78,12 @@ def extract_extended():
     with ProcessPoolExecutor() as executor:
         futures = [executor.submit(process_image, row) for row in rows]
 
-        img = cv2.imread(f"../data/imgs/{img_id}.png")
-        mask = cv2.imread(f"../data/masks/{img_id}_mask.png", cv2.IMREAD_GRAYSCALE)
-
         for future in tqdm(as_completed(futures), total=total):
             res = future.result()
             processed += 1
 
             if res is not None:
-                result.append(res)
+                results.append(res)
             
             if processed % 100 == 0 or processed == total:
                 progress_percentage = (processed / total) * 100

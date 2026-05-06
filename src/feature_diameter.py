@@ -46,9 +46,8 @@ def get_diameter(mask):
     if len(points) < 2:
         return 0.0
 
-    # Pairwise distances between contour points
-    diff = points[:, np.newaxis, :] - points[np.newaxis, :, :]
-    distances = np.sqrt(np.sum(diff ** 2, axis=2))
+    # FAST diameter approximation
+    (x, y), radius = cv2.minEnclosingCircle(largest_contour)
+    diameter = radius * 2
 
-    diameter = float(np.max(distances))
-    return diameter
+    return float(diameter)

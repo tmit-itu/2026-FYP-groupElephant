@@ -6,7 +6,7 @@ def remove_hair(img):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     #Blackhat transformation
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (17,17))
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9,9))
     blackhat = cv2.morphologyEx(gray, cv2.MORPH_BLACKHAT, kernel)
 
     #Create a hair mask

@@ -24,7 +24,7 @@ def extract_all():
         img_id = row["img_id"][:-4] 
 
         img = cv2.imread(f"../data/imgs/{img_id}.png")
-        mask = cv2.imread(f"../data/masks/{img_id}_mask.png")
+        mask = cv2.imread(f"../data/masks/{img_id}_mask.png", cv2.IMREAD_GRAYSCALE)
 
         if img is not None and mask is not None:
             img_preprocessed = enhance_color_hsv_clahe(img)

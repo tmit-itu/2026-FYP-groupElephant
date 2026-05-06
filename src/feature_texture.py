@@ -2,6 +2,9 @@ import cv2
 import numpy as np 
 
 def mean_gradient(image,mask):
+    #Reduce dimensions to run the code faster
+    image = cv2.resize(image, (256, 256))
+    mask = cv2.resize(mask, (256, 256), interpolation=cv2.INTER_NEAREST)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize = 3)

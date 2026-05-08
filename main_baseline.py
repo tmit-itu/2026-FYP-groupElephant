@@ -1,7 +1,7 @@
 import pandas as pd
 from src.classifier import get_features, train_model, evaluate_model
 
-data = pd.read_csv("results/features.csv")
+data = pd.read_csv("results/features_baseline.csv")
 
 features = get_features(data)
 
